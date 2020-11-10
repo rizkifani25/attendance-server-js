@@ -19,21 +19,23 @@ exports.adminLogin = async (req, res) => {
                 res.status(200).send({
                     responseCode: 400,
                     responseMessage: "Wrong password",
+                    data: []
                 });
             } else {
                 res.status(200).send({
                     responseCode: 200,
                     responseMessage: "Success",
-                    data: {
-                        username: data.username
-                    }
+                    data: [
+                        { username: data.username, password: 'none' }
+                    ]
                 });
             }
         }).catch(err => {
             console.log(err);
             res.status(400).send({
                 responseCode: 400,
-                responseMessage: "Invalid admin login"
+                responseMessage: "Invalid admin login",
+                data: []
             });
         });
 };
@@ -53,7 +55,8 @@ exports.adminRegister = async (req, res) => {
             if (data) {
                 res.status(200).send({
                     responseCode: 200,
-                    responseMessage: "Username for admin already exist"
+                    responseMessage: "Username for admin already exist",
+                    data: []
                 });
             } else {
                 // Hashing password
@@ -72,12 +75,14 @@ exports.adminRegister = async (req, res) => {
                         res.status(200).send({
                             responseCode: 200,
                             responseMessage: "Success",
+                            data: []
                         });
                     }).catch(err => {
                         console.log(err);
                         res.status(400).send({
                             responseCode: 200,
                             responseMessage: "Server failed. Can't save data",
+                            data: []
                         });
                     });
             }
@@ -86,6 +91,7 @@ exports.adminRegister = async (req, res) => {
             res.status(400).send({
                 responseCode: 400,
                 responseMessage: "Failed",
+                data: []
             });
         });
 };

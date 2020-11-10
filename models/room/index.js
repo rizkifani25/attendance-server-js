@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const roomSchema = mongoose.Schema({
     _id: Number,
@@ -11,4 +11,4 @@ const roomSchema = mongoose.Schema({
     date: String,
 });
 
-module.exports = mongoose.model("roomModel", roomSchema, "room");
+module.exports = mongoose.model('roomModel', roomSchema, 'room');

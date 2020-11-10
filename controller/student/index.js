@@ -22,9 +22,9 @@ exports.studentList = async (req, res) => {
             res.status(400).send({
                 responseCode: 400,
                 responseMessage: "Listing failed",
+                data: []
             });
         });
-
 };
 
 // studentLogin
@@ -43,19 +43,22 @@ exports.studentLogin = async (req, res) => {
             if (!isValidPass) {
                 res.status(200).send({
                     responseCode: 400,
-                    responseMessage: "Wrong password"
+                    responseMessage: "Wrong password",
+                    data: []
                 });
             } else {
                 res.status(200).send({
                     responseCode: 200,
-                    responseMessage: "Login success"
+                    responseMessage: "Login success",
+                    data: []
                 });
             }
         }).catch(err => {
             console.log(err);
             res.status(400).send({
                 responseCode: 400,
-                responseMessage: "Invalid student id and password"
+                responseMessage: "Invalid student id and password",
+                data: []
             });
         });
 };
@@ -81,7 +84,8 @@ exports.studentRegister = async (req, res) => {
             if (data) {
                 res.status(200).send({
                     responseCode: 400,
-                    responseMessage: "Student id already exist"
+                    responseMessage: "Student id already exist",
+                    data: []
                 });
             } else {
                 // Hashing password
@@ -103,13 +107,15 @@ exports.studentRegister = async (req, res) => {
                     .then(data => {
                         res.status(200).send({
                             responseCode: 200,
-                            responseMessage: "Success"
+                            responseMessage: "Success",
+                            data: []
                         });
                     }).catch(err => {
                         console.log(err);
                         res.status(400).send({
                             responseCode: 400,
-                            responseMessage: "Server failed. Can't save data"
+                            responseMessage: "Server failed. Can't save data",
+                            data: []
                         });
                     });
             }
@@ -118,6 +124,7 @@ exports.studentRegister = async (req, res) => {
             res.status(400).send({
                 responseCode: 400,
                 responseMessage: "Failed",
+                data: []
             });
         });
 };
@@ -153,12 +160,14 @@ exports.studentUpdateData = async (req, res) => {
         .then(data => {
             res.status(200).send({
                 responseCode: 200,
-                responseMessage: "Data updated"
+                responseMessage: "Data updated",
+                data: []
             })
                 .catch(err => {
                     res.status(400).send({
                         responseCode: 400,
-                        responseMessage: "Data failed to update"
+                        responseMessage: "Data failed to update",
+                        data: []
                     });
                 });
         });
@@ -178,19 +187,22 @@ exports.studentDeleteData = async (req, res) => {
             if (data.deletedCount == 1) {
                 res.status(200).send({
                     responseCode: 200,
-                    responseMessage: "Delete success"
+                    responseMessage: "Delete success",
+                    data: []
                 });
             } else {
                 res.status(200).send({
                     responseCode: 400,
-                    responseMessage: "Delete failed"
+                    responseMessage: "Delete failed",
+                    data: []
                 });
             }
         }).catch(err => {
             console.log(err);
             res.status(400).send({
                 responseCode: 400,
-                responseMessage: "Invalid student id"
+                responseMessage: "Invalid student id",
+                data: []
             });
         });
 };
