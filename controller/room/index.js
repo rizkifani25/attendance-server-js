@@ -1,5 +1,3 @@
-const mongoose = require('mongoose');
-const { update } = require('../../models/room');
 const roomModel = require('../../models/room');
 const sequenceModel = require('../../models/sequence');
 const Time = require('../../models/time');
