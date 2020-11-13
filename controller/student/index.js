@@ -65,13 +65,7 @@ exports.studentLogin = async (req, res) => {
 
 // studentRegister
 exports.studentRegister = async (req, res) => {
-    let requestBody = req.body;
-    const student_id = requestBody.student_id;
-    const student_name = requestBody.student_name;
-    const password = requestBody.password;
-    const batch = requestBody.batch;
-    const major = requestBody.major;
-    let additional_data = requestBody.additional_data;
+    const { student_id, student_name, password, batch, major } = req.query;
 
     const query = {
         student_id: student_id,
@@ -99,7 +93,9 @@ exports.studentRegister = async (req, res) => {
                     password: hashedPassword,
                     batch: batch,
                     major: major,
-                    additional_data: additional_data,
+                    additional_data: [
+                        { status: "ungraduated" }
+                    ],
                 });
 
                 newStudent
