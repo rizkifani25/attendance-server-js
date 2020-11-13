@@ -55,7 +55,6 @@ exports.roomRegister = async (req, res) => {
                     time4: timeFour,
                     date: date
                 });
-                console.log(nextValue);
                 await newRoom.save((err, doc) => {
                     if (err) console.log(err);
                     res.status(200).send({
