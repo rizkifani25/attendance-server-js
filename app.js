@@ -20,6 +20,7 @@ const roomListRouter = require('./routes/room/list');
 // Student
 const studentLoginRouter = require('./routes/student/login');
 const studentUpdateDataRouter = require('./routes/student/update');
+const studentRoomHistoryRouter = require('./routes/student/history');
 
 const app = express();
 
@@ -54,11 +55,12 @@ app.use(endpoint.STUDENT_REGISTER, studentRegisterRouter);
 app.use(endpoint.STUDENT_LIST, studentListRouter);
 app.use(endpoint.STUDENT_DELETE, studentDeleteDataRouter);
 app.use(endpoint.ROOM_REGISTER, roomRegisterRouter);
-app.use(endpoint.ROOM_LIST, roomListRouter);
+app.use(endpoint.ROOM_DETAIL, roomListRouter);
 
 // Student
 app.use(endpoint.STUDENT_LOGIN, studentLoginRouter);
 app.use(endpoint.STUDENT_UPDATE_DATA, studentUpdateDataRouter);
+app.use(endpoint.STUDENT_ROOM_HISTORY, studentRoomHistoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

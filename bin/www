@@ -82,10 +82,11 @@ function onError(error) {
  */
 
 function onListening() {
-  var addr = server.address();
+  // server.address()
+  var addr = '192.168.18.22';
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  console.log('Listening on :: ' + port);
+  console.log('Listening on :: ' + addr + ':' + port);
   debug('Listening on ' + bind);
 }

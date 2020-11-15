@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const studentModel = require("../../models/student");
+const roomModel = require('../../models/room');
 const bcrypt = require("bcryptjs");
 
 // studentList
@@ -36,7 +37,7 @@ exports.studentLogin = async (req, res) => {
     };
 
     await studentModel
-        .findOne(query, { __V: 0, _id: 0 })
+        .findOne(query, { __v: 0, _id: 0 })
         .exec()
         .then(async data => {
             const isValidPass = await bcrypt.compare(password, data.password);
@@ -47,11 +48,12 @@ exports.studentLogin = async (req, res) => {
                     data: []
                 });
             } else {
-                res.status(200).send({
-                    responseCode: 200,
-                    responseMessage: "Login success",
-                    data: []
-                });
+                await
+                    res.status(200).send({
+                        responseCode: 200,
+                        responseMessage: "Login success",
+                        data: []
+                    });
             }
         }).catch(err => {
             console.log(err);
@@ -61,6 +63,32 @@ exports.studentLogin = async (req, res) => {
                 data: []
             });
         });
+};
+
+// get student room history
+exports.studentRoomHistory = async (req, res) => {
+    const { student_id, date } = req.query;
+
+    await roomModel.find({
+        $and: [
+            { date: date },
+            {
+                $or: [
+                    { "list_time.time1.enrolled.student_id": student_id },
+                    { "list_time.time2.enrolled.student_id": student_id },
+                    { "list_time.time3.enrolled.student_id": student_id },
+                    { "list_time.time4.enrolled.student_id": student_id }
+                ]
+            }
+        ]
+    }, { __v: 0 }, (err, doc) => {
+        if (err) console.log(err);
+        res.status(200).send({
+            responseCode: 200,
+            responseMessage: "Success",
+            data: doc
+        });
+    });
 };
 
 // studentRegister

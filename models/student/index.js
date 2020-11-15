@@ -7,7 +7,7 @@ const studentSchema = mongoose.Schema({
     password: String,
     batch: String,
     major: String,
-    additional_data: Array,
+    history_room: Array,
 });
 
 module.exports = mongoose.model("studentModel", studentSchema, "student");
