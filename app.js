@@ -21,6 +21,7 @@ const roomListRouter = require('./routes/room/list');
 const studentLoginRouter = require('./routes/student/login');
 const studentUpdateDataRouter = require('./routes/student/update');
 const studentRoomHistoryRouter = require('./routes/student/history');
+const studentAttendRouter = require('./routes/student/attend');
 
 const app = express();
 
@@ -44,7 +45,7 @@ mongoose
     .catch(err => console.log(err));
 
 app.use(logger('dev'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -61,6 +62,7 @@ app.use(endpoint.ROOM_DETAIL, roomListRouter);
 app.use(endpoint.STUDENT_LOGIN, studentLoginRouter);
 app.use(endpoint.STUDENT_UPDATE_DATA, studentUpdateDataRouter);
 app.use(endpoint.STUDENT_ROOM_HISTORY, studentRoomHistoryRouter);
+app.use(endpoint.STUDENT_ATTEND, studentAttendRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

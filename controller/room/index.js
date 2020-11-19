@@ -1,9 +1,6 @@
-const { raw } = require('express');
-const room = require('../../models/room');
 const roomModel = require('../../models/room');
 const sequenceModel = require('../../models/sequence');
 const studentModel = require('../../models/student');
-const Time = require('../../models/time');
 
 const getNextSequenceValue = async (sequenceName) => {
     return new Promise((resolve, reject) => {
@@ -27,7 +24,9 @@ const broadcastToStudent = async (listStudent, roomId) => {
 
     let room = {
         room_id: roomId,
-        status: 1
+        status: 1,
+        attend_time: {},
+        attend_out: {}
     };
 
     studentModel.find({ $or: arrayStudent }, (err, res) => {
