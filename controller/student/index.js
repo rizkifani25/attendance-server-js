@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const studentModel = require("../../models/student");
 const roomModel = require('../../models/room');
 const bcrypt = require("bcryptjs");
+const { default: Axios } = require("axios");
+const urlFaceValidator = 'http://192.168.18.5:15000/validate';
 
 const parsingTime = (time) => {
     let result;
@@ -19,23 +21,16 @@ const parsingTime = (time) => {
 exports.studentList = async (req, res) => {
     const { student_id } = req.query;
     let query = {};
-    student_id ? query = { student_id: student_id } : query = {};
+    let regex = '/' + student_id + '/.test(this.student_id)';
+    student_id ? query = { $where: regex } : query = {};
 
     await studentModel
-        .find(query, { __v: 0, _id: 0, password: 0 })
-        .exec()
-        .then(data => {
+        .find(query, { __v: 0, _id: 0, password: 0 }, (err, doc) => {
+            if (err) console.log(err);
             res.status(200).send({
                 responseCode: 200,
                 responseMessage: "Success",
-                data: data
-            });
-        }).catch(err => {
-            console.log(err);
-            res.status(400).send({
-                responseCode: 400,
-                responseMessage: "Listing failed",
-                data: []
+                data: doc
             });
         });
 };
@@ -263,36 +258,69 @@ exports.studentAttend = async (req, res) => {
         room_id: room_id
     };
 
-    roomModel.findOne(query, { __v: 0, _id: 0 }, (err, doc) => {
+    res.status(200).send({
+        responseCode: 200,
+        responseMessage: 'success',
+        data: []
+    });
+
+    roomModel.findOne(query, { __v: 0, _id: 0 }, async (err, doc) => {
         let rangeTime = doc['list_time'][selector]['time'].split(' - ');
         let startTime = parseFloat(rangeTime[0]);
         let endTime = parseFloat(rangeTime[1]);
-        let updatedStatus;
+        let updatedStatus = {};
 
         console.log('===================DOC FOUND START==========================');
         console.log('start time :: ' + startTime);
         console.log('end time :: ' + endTime);
 
+        // validate by distance
         if (attend_time != null) {
-            let time = parseFloat(attend_time['time']);
             let distance = parseFloat(attend_time['distance']);
-            console.log('attend time :: ' + time + ' distance :: ' + distance);
-            distance > maxDistance ? console.log('attend :: not in range') : console.log('attend :: in range');
-            time <= startTime ? console.log('attend :: on time') : console.log('attend :: late');
-            if (distance <= maxDistance && time <= startTime || time >= startTime + 10) {
-                updatedStatus = 0;
-            } else {
-                updatedStatus = 2;
-            }
-
+            distance <= maxDistance ? updatedStatus['by_distance'] = 'valid! Student attend inside radius' : updatedStatus['by_distance'] = 'not valid! Student attend outside radius';
         } else if (out_time != null) {
-            let time = parseFloat(out_time['time']);
             let distance = parseFloat(out_time['distance']);
-            console.log('out time :: ' + time + ' distance :: ' + distance);
-            distance > maxDistance ? console.log('out :: not in range') : console.log('out :: in range');
-            time >= endTime ? console.log('out :: on time') : console.log('out :: not in time');
+            distance <= maxDistance ? updatedStatus['by_distance'] = 'valid! Student attend inside radius' : updatedStatus['by_distance'] = 'not valid! Student attend outside radius';
         }
 
+        // validate by time
+        if (attend_time != null) {
+            let timeAttend = parseFloat(attend_time['time']);
+            timeAttend > startTime + 10 ? updatedStatus['by_time'] = 'not valid! Student attend 10 minutes late' : updatedStatus['by_time'] = 'valid! Student attend on time';
+        } else if (out_time != null) {
+            let timeOut = parseFloat(out_time['time']);
+            timeOut < endTime - 10 ? updatedStatus['by_time'] = 'not valid! Student out 10 minutes earlier' : updatedStatus['by_time'] = 'valid! Student out on time';
+        }
+
+        // validate by photo
+        let requestData = {
+            room_id: room_id,
+            student_id: student_id,
+        };
+        if (attend_time != null) {
+            console.log(attend_time['image']);
+            requestData['is_out'] = false;
+            await Axios.post(urlFaceValidator, requestData).then(response => {
+                console.log(response.data);
+                let responseBody = response.data;
+                updatedStatus['by_photo'] = responseBody['data']['result'] + ' - ' + responseBody['data']['face_distance'];
+            }).catch(error => {
+                console.log(error);
+                updatedStatus['by_photo'] = 'something weird happen, can\'t validate using face';
+            });
+        } else if (out_time != null) {
+            console.log(out_time['image']);
+            requestData['is_out'] = true;
+            await Axios.post(urlFaceValidator, requestData).then(response => {
+                console.log(response.data);
+                let responseBody = response.data;
+                updatedStatus['by_photo'] = responseBody['data']['result'] + ' - ' + responseBody['data']['face_distance'];
+            }).catch(error => {
+                console.log(error);
+                updatedStatus['by_photo'] = 'something weird happen, can\'t validate using face';
+            });
+        }
+        console.log(updatedStatus);
         console.log('===================DOC FOUND END==========================');
 
         if (attend_time != null) update = { [keyAttend]: attend_time, [keyStatus]: updatedStatus };
@@ -301,12 +329,7 @@ exports.studentAttend = async (req, res) => {
         console.log(update);
         roomModel.findOneAndUpdate(query, { $set: update }, { new: true }, (err, doc, next) => {
             if (err) console.log(err);
-            // console.log(doc);
-            res.status(200).send({
-                responseCode: 200,
-                responseMessage: 'success',
-                data: doc
-            });
+            console.log(doc);
         });
     });
 };

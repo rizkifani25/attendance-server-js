@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const adminModel = require("../../models/admin");
 const bcrypt = require("bcryptjs");
+const adminModel = require("../../models/admin");
 
 // adminLogin
 exports.adminLogin = async (req, res) => {
@@ -17,7 +17,7 @@ exports.adminLogin = async (req, res) => {
             const isValidPass = await bcrypt.compare(password, data.password);
             if (!isValidPass) {
                 res.status(200).send({
-                    responseCode: 400,
+                    responseCode: 200,
                     responseMessage: "Wrong password",
                     data: []
                 });
@@ -32,8 +32,8 @@ exports.adminLogin = async (req, res) => {
             }
         }).catch(err => {
             console.log(err);
-            res.status(400).send({
-                responseCode: 400,
+            res.status(200).send({
+                responseCode: 200,
                 responseMessage: "Invalid admin login",
                 data: []
             });

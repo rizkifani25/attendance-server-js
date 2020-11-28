@@ -11,11 +11,21 @@ const cors = require('cors');
 // Admin
 const adminLoginRouter = require('./routes/admin/login');
 const adminRegisterRouter = require('./routes/admin/register');
+
+const lecturerRegisterRouter = require('./routes/lecturer/register');
+const lecturerListRouter = require('./routes/lecturer/list');
+const lecturerDeleteDataRouter = require('./routes/lecturer/delete');
+
 const studentRegisterRouter = require('./routes/student/register');
 const studentListRouter = require('./routes/student/list');
 const studentDeleteDataRouter = require('./routes/student/delete');
+
 const roomRegisterRouter = require('./routes/room/register');
 const roomListRouter = require('./routes/room/list');
+
+// Lecturer
+const lecturerLoginRouter = require('./routes/lecturer/login');
+const lecturerUpdateDataRouter = require('./routes/lecturer/update');
 
 // Student
 const studentLoginRouter = require('./routes/student/login');
@@ -52,11 +62,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Admin
 app.use(endpoint.ADMIN_LOGIN, adminLoginRouter);
 app.use(endpoint.ADMIN_REGISTER, adminRegisterRouter);
+
+app.use(endpoint.LECTURER_REGISTER, lecturerRegisterRouter);
+app.use(endpoint.LECTURER_LIST, lecturerListRouter);
+app.use(endpoint.LECTURER_DELETE, lecturerDeleteDataRouter);
+
 app.use(endpoint.STUDENT_REGISTER, studentRegisterRouter);
 app.use(endpoint.STUDENT_LIST, studentListRouter);
 app.use(endpoint.STUDENT_DELETE, studentDeleteDataRouter);
+
 app.use(endpoint.ROOM_REGISTER, roomRegisterRouter);
 app.use(endpoint.ROOM_DETAIL, roomListRouter);
+
+// Lecturer
+app.use(endpoint.LECTURER_LOGIN, lecturerLoginRouter);
+app.use(endpoint.LECTURER_UPDATE_DATA, lecturerUpdateDataRouter);
 
 // Student
 app.use(endpoint.STUDENT_LOGIN, studentLoginRouter);

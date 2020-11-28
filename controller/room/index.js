@@ -1,3 +1,4 @@
+const lecturer = require('../../models/lecturer');
 const roomModel = require('../../models/room');
 const sequenceModel = require('../../models/sequence');
 const studentModel = require('../../models/student');
@@ -17,35 +18,39 @@ const getNextSequenceValue = async (sequenceName) => {
 
 const broadcastToStudent = async (listStudent, roomId) => {
     let arrayStudent = [];
-    console.log(listStudent.length);
-    for (let i = 0; i < listStudent.length; i++) {
-        arrayStudent.push({ student_id: listStudent[i].student_id });
+
+    if (listStudent.length > 0) {
+        console.log('broadcastToStudent on');
+        for (let i = 0; i < listStudent.length; i++) {
+            arrayStudent.push({ student_id: listStudent[i].student_id });
+        }
+
+        let room = {
+            room_id: roomId,
+        };
+
+        studentModel.find({ $or: arrayStudent }, (err, res) => {
+            if (err) console.log(err);
+            console.log(res);
+        });
+
+        studentModel.updateMany({ $or: arrayStudent }, { $addToSet: { history_room: room } }, (err, raw) => {
+            if (err) console.log(err);
+            console.log(raw);
+        });
+    } else {
+        console.log('broadcastToStudent off');
     }
-
-    let room = {
-        room_id: roomId,
-        status: 1,
-        attend_time: {},
-        attend_out: {}
-    };
-
-    studentModel.find({ $or: arrayStudent }, (err, res) => {
-        if (err) console.log(err);
-        console.log(res);
-    });
-
-    studentModel.updateMany({ $or: arrayStudent }, { $addToSet: { history_room: room } }, (err, raw) => {
-        if (err) console.log(err);
-        console.log(raw);
-    });
 };
+
+const broadcastToLecturer = async (lecturer, roomId) => { };
 
 // roomRegister
 exports.roomRegister = async (req, res) => {
     let { room_name, updated_time, date, time } = req.body;
 
     updated_time.enrolled = updated_time.enrolled == undefined ? [] : updated_time.enrolled;
-    console.log(req.body);
+
     let updateRoomQuery;
     let updatedData = {
         status: updated_time.status,
