@@ -27,3 +27,6 @@ exports.STUDENT_LOGIN = '/student/login';
 exports.STUDENT_UPDATE_DATA = '/student/update';
 exports.STUDENT_ROOM_HISTORY = '/student/history';
 exports.STUDENT_ATTEND = '/student/attend';
+
+// Room
+exports.ROOM_HISTORY = '/room/history';

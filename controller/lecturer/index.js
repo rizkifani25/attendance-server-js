@@ -1,23 +1,24 @@
-const mongoose = require("mongoose");
-const lecturerModel = require("../../models/lecturer");
-const roomModel = require('../../models/room');
-const bcrypt = require("bcryptjs");
+const mongoose = require('mongoose');
+const lecturerModel = require('../../models/lecturer');
+const { logger } = require('../../service/logger');
+const bcrypt = require('bcryptjs');
 
 // lecturerList
 exports.lecturerList = async (req, res) => {
-    const { lecturer_name } = req.query;
+    const { lecturer_name, lecturer_email } = req.query;
     let query = {};
     let regex = '/' + lecturer_name + '/i.test(this.lecturer_name)';
     lecturer_name ? lecturer_name == '' ? query = {} : query = { $where: regex } : query = {};
+    lecturer_email ? lecturer_email == '' ? query = {} : query = { lecturer_email: lecturer_email } : query = {};
 
     console.log(query);
     await lecturerModel
-        .find(query, { __v: 0, _id: 0, password: 0 }, (err, doc) => {
+        .find(query, { __v: 0, _id: 0 }, (err, doc) => {
             if (err) console.log(err);
             console.log(doc);
             res.status(200).send({
                 responseCode: 200,
-                responseMessage: "Success",
+                responseMessage: 'Success',
                 data: doc
             });
         });
@@ -25,7 +26,9 @@ exports.lecturerList = async (req, res) => {
 
 // lecturerLogin
 exports.lecturerLogin = async (req, res) => {
-    const { lecturer_email, password } = req.query;
+    let requestBody = req.body;
+    const lecturer_email = requestBody.lecturer_email;
+    const password = requestBody.password;
 
     const query = {
         lecturer_email: lecturer_email
@@ -39,22 +42,21 @@ exports.lecturerLogin = async (req, res) => {
             if (!isValidPass) {
                 res.status(200).send({
                     responseCode: 400,
-                    responseMessage: "Wrong password",
+                    responseMessage: 'Wrong password',
                     data: []
                 });
             } else {
-                await
-                    res.status(200).send({
-                        responseCode: 200,
-                        responseMessage: "Login success",
-                        data: []
-                    });
+                res.status(200).send({
+                    responseCode: 200,
+                    responseMessage: 'Login success',
+                    data: data
+                });
             }
         }).catch(err => {
-            console.log(err);
-            res.status(400).send({
+            logger(err);
+            res.status(200).send({
                 responseCode: 400,
-                responseMessage: "Invalid lecturer name and password",
+                responseMessage: 'Invalid lecturer email and password',
                 data: []
             });
         });
@@ -75,7 +77,7 @@ exports.lecturerRegister = async (req, res) => {
             if (data) {
                 res.status(200).send({
                     responseCode: 400,
-                    responseMessage: "Email already exist",
+                    responseMessage: 'Email already exist',
                     data: []
                 });
             } else {
@@ -96,14 +98,14 @@ exports.lecturerRegister = async (req, res) => {
                     .then(data => {
                         res.status(200).send({
                             responseCode: 200,
-                            responseMessage: "Success",
+                            responseMessage: 'Success',
                             data: []
                         });
                     }).catch(err => {
                         console.log(err);
                         res.status(400).send({
                             responseCode: 400,
-                            responseMessage: "Server failed. Can't save data",
+                            responseMessage: 'Server failed. Can\'t save data',
                             data: []
                         });
                     });
@@ -112,7 +114,7 @@ exports.lecturerRegister = async (req, res) => {
             console.log(err);
             res.status(400).send({
                 responseCode: 400,
-                responseMessage: "Failed",
+                responseMessage: 'Failed',
                 data: []
             });
         });
@@ -144,7 +146,7 @@ exports.lecturerUpdateData = async (req, res) => {
             console.log(doc);
             res.status(200).send({
                 responseCode: 200,
-                responseMessage: "Data updated",
+                responseMessage: 'Data updated',
                 data: []
             });
         });
@@ -164,13 +166,13 @@ exports.lecturerDeleteData = async (req, res) => {
             if (data.deletedCount == 1) {
                 res.status(200).send({
                     responseCode: 200,
-                    responseMessage: "Delete success",
+                    responseMessage: 'Delete success',
                     data: []
                 });
             } else {
                 res.status(200).send({
                     responseCode: 400,
-                    responseMessage: "Delete failed",
+                    responseMessage: 'Delete failed',
                     data: []
                 });
             }
@@ -178,7 +180,7 @@ exports.lecturerDeleteData = async (req, res) => {
             console.log(err);
             res.status(400).send({
                 responseCode: 400,
-                responseMessage: "Invalid lecturer email",
+                responseMessage: 'Invalid lecturer email',
                 data: []
             });
         });
