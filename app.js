@@ -3,7 +3,8 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const logger = require('morgan');
+const log = require('morgan');
+const { logger } = require('./service/logger');
 const mongoose = require('mongoose');
 const endpoint = require('./service/endpoint');
 const cors = require('cors');
@@ -44,9 +45,11 @@ app.use(
     })
 );
 
+require("dotenv").config();
+
 mongoose
     .connect(
-        'mongodb://localhost:27017/attendance',
+        process.env.ATTENDACE_DB_MONGO,
         {
             useUnifiedTopology: true,
             useNewUrlParser: true,
@@ -55,9 +58,9 @@ mongoose
         }
     )
     .then(console.log('DB connected'))
-    .catch(err => console.log(err));
+    .catch(err => logger(error));
 
-app.use(logger('dev'));
+app.use(log('dev'));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
