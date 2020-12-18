@@ -1,9 +1,6 @@
 exports.HOME = '/';
 
 // Admin
-exports.ADMIN_LOGIN = '/admin/login';
-exports.ADMIN_REGISTER = '/admin/register';
-
 exports.LECTURER_REGISTER = '/lecturer/register';
 exports.LECTURER_LIST = '/lecturer/list';
 exports.LECTURER_DELETE = '/lecturer/delete';

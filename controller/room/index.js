@@ -145,9 +145,9 @@ exports.roomList = async (req, res) => {
             } else {
                 await getNextSequenceValue('roomId').then(async (nextValue) => {
                     const lecturer = new lecturerModel({
-                        lecturer_email: '-',
-                        password: '-',
-                        lecturer_name: '-',
+                        lecturer_email: '',
+                        password: '',
+                        lecturer_name: '',
                         history_room: []
                     });
                     const status = {
@@ -161,7 +161,7 @@ exports.roomList = async (req, res) => {
                         status: status,
                         enrolled: [],
                         lecturer: lecturer,
-                        subject: '-'
+                        subject: ''
                     };
                     const detailTime2 = {
                         time: '10.00 - 12.00',
@@ -170,7 +170,7 @@ exports.roomList = async (req, res) => {
                         status: status,
                         enrolled: [],
                         lecturer: lecturer,
-                        subject: '-'
+                        subject: ''
                     };
                     const detailTime3 = {
                         time: '12.30 - 14.30',
@@ -179,7 +179,7 @@ exports.roomList = async (req, res) => {
                         status: status,
                         enrolled: [],
                         lecturer: lecturer,
-                        subject: '-'
+                        subject: ''
                     };
                     const detailTime4 = {
                         time: '15.00 - 17.00',
@@ -188,7 +188,7 @@ exports.roomList = async (req, res) => {
                         status: status,
                         enrolled: [],
                         lecturer: lecturer,
-                        subject: '-'
+                        subject: ''
                     };
                     const newRoom = new roomModel({
                         _id: nextValue,
@@ -221,6 +221,7 @@ exports.roomHistory = async (req, res) => {
     const { student_id, lecturer_email, date } = req.query;
 
     let orQuery;
+    let andQuery;
 
     if (student_id) {
         orQuery = [
@@ -240,21 +241,16 @@ exports.roomHistory = async (req, res) => {
         ];
     }
 
+    await roomModel.find(
+        date == '' ? { $or: orQuery } : { $and: [{ date: date }, { $or: orQuery }] },
+        { __v: 0 },
+        (err, doc) => {
+            if (err) logger(err);
+            res.status(200).send({
+                responseCode: 200,
+                responseMessage: 'Success',
+                data: doc != null ? doc : []
+            });
 
-    await roomModel.find({
-        $and: [
-            { date: date },
-            {
-                $or: orQuery
-            }
-        ]
-    }, { __v: 0 }, (err, doc) => {
-        if (err) logger(err);
-        res.status(200).send({
-            responseCode: 200,
-            responseMessage: 'Success',
-            data: doc != null ? doc : []
         });
-
-    });
 };

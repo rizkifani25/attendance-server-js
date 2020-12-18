@@ -9,10 +9,11 @@ const mongoose = require('mongoose');
 const endpoint = require('./service/endpoint');
 const cors = require('cors');
 
-// Admin
-const adminLoginRouter = require('./routes/admin/login');
-const adminRegisterRouter = require('./routes/admin/register');
+const router = express.Router();
+const timeModel = require('./models/time');
+const studentModel = require('./models/student');
 
+// Admin
 const lecturerRegisterRouter = require('./routes/lecturer/register');
 const lecturerListRouter = require('./routes/lecturer/list');
 const lecturerDeleteDataRouter = require('./routes/lecturer/delete');
@@ -66,9 +67,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Admin
-app.use(endpoint.ADMIN_LOGIN, adminLoginRouter);
-app.use(endpoint.ADMIN_REGISTER, adminRegisterRouter);
-
 app.use(endpoint.LECTURER_REGISTER, lecturerRegisterRouter);
 app.use(endpoint.LECTURER_LIST, lecturerListRouter);
 app.use(endpoint.LECTURER_DELETE, lecturerDeleteDataRouter);
@@ -93,6 +91,33 @@ app.use(endpoint.STUDENT_ATTEND, studentAttendRouter);
 // Room
 app.use(endpoint.ROOM_HISTORY, roomHistoryRouter);
 
+// TEST
+app.use('/test', async (req, res, next) => {
+    let student = new studentModel({
+        _id: new mongoose.Types.ObjectId(),
+        student_id: '001201700038',
+        student_name: 'Rizki Fani',
+        password: 'fani25',
+        batch: '2017',
+        major: 'IT',
+        history_room: [
+            { roomId: '44-B101' },
+            { roomId: '45-B101' },
+            { roomId: '46-B101' }
+        ],
+    });
+
+    let response = new timeModel();
+    response.status = true;
+    response.subject = 'CGA';
+    response.lecturer = 'Fani';
+    response.enrolled = [
+        student
+    ];
+
+    res.status(200).send(response);
+});
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(createError(404));
@@ -106,7 +131,9 @@ app.use(function (err, req, res, next) {
 
     // render the error page
     res.status(err.status || 500);
-    res.json({});
+    res.json({
+        message: '404 Not found'
+    });
 });
 
 module.exports = app;

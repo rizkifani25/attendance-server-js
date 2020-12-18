@@ -8,14 +8,18 @@ exports.lecturerList = async (req, res) => {
     const { lecturer_name, lecturer_email } = req.query;
     let query = {};
     let regex = '/' + lecturer_name + '/i.test(this.lecturer_name)';
-    lecturer_name ? lecturer_name == '' ? query = {} : query = { $where: regex } : query = {};
-    lecturer_email ? lecturer_email == '' ? query = {} : query = { lecturer_email: lecturer_email } : query = {};
 
-    console.log(query);
+    lecturer_name ?
+        lecturer_name == '' ? query = {} : query = { $where: regex }
+        :
+        lecturer_email ?
+            lecturer_email == '' ? query = {} : query = { lecturer_email: lecturer_email }
+            :
+            query = {};
+
     await lecturerModel
         .find(query, { __v: 0, _id: 0 }, (err, doc) => {
             if (err) console.log(err);
-            console.log(doc);
             res.status(200).send({
                 responseCode: 200,
                 responseMessage: 'Success',

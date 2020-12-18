@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 const studentModel = require('../../models/student');
+const sequenceModel = require('../../models/sequence');
 const roomModel = require('../../models/room');
 const bcrypt = require('bcryptjs');
 const { logger } = require('../../service/logger');
 const { default: Axios } = require('axios');
-const urlFaceValidator = process.env.FR_ENGINE_API;
 
 const parsingTime = (time) => {
     let result;
@@ -16,6 +16,18 @@ const parsingTime = (time) => {
     else result = '';
 
     return result;
+};
+
+const getUrlFREngine = () => {
+    return new Promise((resolve, reject) => {
+        sequenceModel.findOne(
+            { '_id': 'urlAPI' },
+            (err, doc) => {
+                if (err) logger(err);
+                resolve(doc.value);
+            }
+        );
+    });
 };
 
 // studentList
@@ -89,11 +101,11 @@ exports.studentRoomHistory = async (req, res) => {
             }
         ]
     }, { __v: 0 }, (err, doc) => {
-        if (err) console.log(err);
+        if (err) logger(err);
         res.status(200).send({
             responseCode: 200,
             responseMessage: 'Success',
-            data: doc
+            data: doc ? doc : []
         });
     });
 };
@@ -240,17 +252,18 @@ exports.studentDeleteData = async (req, res) => {
 
 // studentAttend
 exports.studentAttend = async (req, res) => {
-    const { room_id, time, student_id, attend_time, out_time } = req.body;
+    const { room_id, time, student_id, attend_time, out_time, permission } = req.body;
     const maxDistance = 10.00;
     let query;
     let update;
 
-    selector = parsingTime(time);
+    let selector = parsingTime(time);
 
-    let keyQuery = 'list_time.' + selector + '.enrolled.student_id';
+    let keyQuery = 'list_time.' + selector + '.enrolled.student.student_id';
     let keyStatus = 'list_time.' + selector + '.enrolled.$.status';
     let keyAttend = 'list_time.' + selector + '.enrolled.$.attend_time';
     let keyOut = 'list_time.' + selector + '.enrolled.$.out_time';
+    let keyPermission = 'list_time.' + selector + '.enrolled.$.permission';
 
     query = {
         [keyQuery]: student_id,
@@ -263,17 +276,13 @@ exports.studentAttend = async (req, res) => {
         data: []
     });
 
+    let urlFaceValidator = await getUrlFREngine();
+    console.log(query);
     try {
         roomModel.findOne(query, { __v: 0, _id: 0 }, async (err, doc) => {
-            console.log(doc);
-            let rangeTime = doc['list_time'][selector]['time'].split(' - ');
-            let startTime = parseFloat(rangeTime[0]);
-            let endTime = parseFloat(rangeTime[1]);
             let updatedStatus = {};
 
             console.log('===================DOC FOUND START==========================');
-            console.log('start time :: ' + startTime);
-            console.log('end time :: ' + endTime);
 
             // validate by distance
             if (attend_time != null) {
@@ -284,20 +293,12 @@ exports.studentAttend = async (req, res) => {
                 distance <= maxDistance ? updatedStatus['by_distance'] = 'valid! Student attend inside radius' : updatedStatus['by_distance'] = 'not valid! Student attend outside radius';
             }
 
-            // validate by time
-            if (attend_time != null) {
-                let timeAttend = parseFloat(attend_time['time']);
-                timeAttend > startTime + 10 ? updatedStatus['by_time'] = 'not valid! Student attend 10 minutes late' : updatedStatus['by_time'] = 'valid! Student attend on time';
-            } else if (out_time != null) {
-                let timeOut = parseFloat(out_time['time']);
-                timeOut < endTime - 10 ? updatedStatus['by_time'] = 'not valid! Student out 10 minutes earlier' : updatedStatus['by_time'] = 'valid! Student out on time';
-            }
-
             // validate by photo
             let requestData = {
                 room_id: room_id,
                 student_id: student_id,
             };
+
             if (attend_time != null) {
                 console.log(attend_time['image']);
                 requestData['is_out'] = false;
@@ -306,7 +307,7 @@ exports.studentAttend = async (req, res) => {
                     let responseBody = response.data;
                     updatedStatus['by_photo'] = responseBody['data']['result'] + ' - ' + responseBody['data']['face_distance'];
                 }).catch(error => {
-                    console.log(error);
+                    logger(error);
                     updatedStatus['by_photo'] = 'something weird happen, can\'t validate using face';
                 });
             } else if (out_time != null) {
@@ -317,7 +318,7 @@ exports.studentAttend = async (req, res) => {
                     let responseBody = response.data;
                     updatedStatus['by_photo'] = responseBody['data']['result'] + ' - ' + responseBody['data']['face_distance'];
                 }).catch(error => {
-                    console.log(error);
+                    logger(error);
                     updatedStatus['by_photo'] = 'something weird happen, can\'t validate using face';
                 });
             }
@@ -326,10 +327,11 @@ exports.studentAttend = async (req, res) => {
 
             if (attend_time != null) update = { [keyAttend]: attend_time, [keyStatus]: updatedStatus };
             if (out_time != null) update = { [keyOut]: out_time };
+            if (permission != null) update = { [keyPermission]: permission };
 
             console.log(update);
             roomModel.findOneAndUpdate(query, { $set: update }, { new: true }, (err, doc, next) => {
-                if (err) console.log(err);
+                if (err) logger(err);
                 console.log(doc);
             });
         });
