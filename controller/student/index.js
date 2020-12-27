@@ -140,6 +140,7 @@ exports.studentRegister = async (req, res) => {
                     password: hashedPassword,
                     batch: batch,
                     major: major,
+                    base_image: '',
                     additional_data: [
                         { status: 'ungraduated' }
                     ],
@@ -180,6 +181,7 @@ exports.studentUpdateData = async (req, res) => {
     let password = requestBody.password;
     let batch = requestBody.batch;
     let major = requestBody.major;
+    let base_image = requestBody.base_image;
     let additional_data = requestBody.additional_data;
 
     const query = {
@@ -196,24 +198,22 @@ exports.studentUpdateData = async (req, res) => {
     }
     if (batch) update.batch = batch;
     if (major) update.major = major;
+    if (base_image) update.base_image = base_image;
     if (additional_data) update.additional_data = additional_data;
 
+    console.log(update);
+
     await studentModel
-        .findOneAndUpdate(query, { $set: update })
-        .then(data => {
+        .findOneAndUpdate(query, { $set: update }, (err, doc, response) => {
+            if (err) logger(err);
+            console.log(doc);
             res.status(200).send({
                 responseCode: 200,
                 responseMessage: 'Data updated',
                 data: []
-            })
-                .catch(err => {
-                    res.status(400).send({
-                        responseCode: 400,
-                        responseMessage: 'Data failed to update',
-                        data: []
-                    });
-                });
+            });
         });
+
 };
 
 // studentDelete
@@ -287,10 +287,10 @@ exports.studentAttend = async (req, res) => {
             // validate by distance
             if (attend_time != null) {
                 let distance = parseFloat(attend_time['distance']);
-                distance <= maxDistance ? updatedStatus['by_distance'] = 'valid! Student attend inside radius' : updatedStatus['by_distance'] = 'not valid! Student attend outside radius';
+                distance <= maxDistance ? updatedStatus['by_distance'] = 'valid' : updatedStatus['by_distance'] = 'not valid';
             } else if (out_time != null) {
                 let distance = parseFloat(out_time['distance']);
-                distance <= maxDistance ? updatedStatus['by_distance'] = 'valid! Student attend inside radius' : updatedStatus['by_distance'] = 'not valid! Student attend outside radius';
+                distance <= maxDistance ? updatedStatus['by_distance'] = 'valid' : updatedStatus['by_distance'] = 'not valid';
             }
 
             // validate by photo

@@ -2,7 +2,7 @@ const lecturerModel = require('../../models/lecturer');
 const roomModel = require('../../models/room');
 const sequenceModel = require('../../models/sequence');
 const studentModel = require('../../models/student');
-const { logger } = require('../../service/logger');
+const { logger, info } = require('../../service/logger');
 
 const getNextSequenceValue = async (sequenceName) => {
     return new Promise((resolve, reject) => {
@@ -21,6 +21,7 @@ const broadcastToStudent = async (listStudent, roomId) => {
     let arrayStudent = [];
 
     if (listStudent.length > 0) {
+        logger('Execute broadcastToStudent');
         for (let i = 0; i < listStudent.length; i++) {
             arrayStudent.push({ student_id: listStudent[i].student.student_id });
         }
@@ -30,22 +31,22 @@ const broadcastToStudent = async (listStudent, roomId) => {
         };
 
         studentModel.find({ $or: arrayStudent }, (err, res) => {
-            if (err) console.log(err);
-            console.log(res);
+            if (err) logger(err);
+            logger(res);
         });
 
         studentModel.updateMany({ $or: arrayStudent }, { $addToSet: { history_room: room } }, (err, raw) => {
-            if (err) console.log(err);
-            console.log(raw);
+            if (err) logger(err);
+            logger(raw);
         });
     } else {
-        console.log('broadcastToStudent off');
+        logger('Not execute broadcastToStudent');
     }
 };
 
 const broadcastToLecturer = async (lecturer, roomId) => {
     if (lecturer) {
-        console.log('broadcastToLecturer on');
+        logger('Execute broadcastToLecturer');
 
         let query = {
             lecturer_email: lecturer.lecturer_email
@@ -55,24 +56,18 @@ const broadcastToLecturer = async (lecturer, roomId) => {
             room_id: roomId,
         };
 
-        lecturerModel.find(query, (err, res) => {
-            if (err) console.log(err);
-            console.log(res);
-        });
-
         lecturerModel.updateMany(query, { $addToSet: { history_room: room } }, (err, raw) => {
-            if (err) console.log(err);
-            console.log(raw);
+            if (err) logger(err);
+            info('Total Data Modified = ' + raw['nModified']);
         });
     } else {
-        console.log('broadcastToLecturer off');
+        logger('Not execute broadcastToLecturer');
     }
 };
 
 // roomRegister
 exports.roomRegister = async (req, res) => {
     let { room_name, updated_time, date, time } = req.body;
-    console.log(updated_time.enrolled);
     updated_time.enrolled = updated_time.enrolled == undefined ? [] : updated_time.enrolled;
 
     let updateRoomQuery;
@@ -150,15 +145,17 @@ exports.roomList = async (req, res) => {
                         lecturer_name: '',
                         history_room: []
                     });
-                    const status = {
-                        status: false,
-                        status_message: 'Available'
-                    };
+
                     const detailTime1 = {
                         time: '07.30 - 09.30',
                         punch_in: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 7, 30, 00, 00),
                         punch_out: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 9, 30, 00, 00),
-                        status: status,
+                        status: {
+                            status: false,
+                            status_message: 'Available',
+                            start_at: '',
+                            dismiss_at: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 9, 30, 00, 00).toLocaleString()
+                        },
                         enrolled: [],
                         lecturer: lecturer,
                         subject: ''
@@ -167,7 +164,12 @@ exports.roomList = async (req, res) => {
                         time: '10.00 - 12.00',
                         punch_in: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 10, 0, 00, 00),
                         punch_out: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 12, 0, 00, 00),
-                        status: status,
+                        status: {
+                            status: false,
+                            status_message: 'Available',
+                            start_at: '',
+                            dismiss_at: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 12, 0, 00, 00).toLocaleString()
+                        },
                         enrolled: [],
                         lecturer: lecturer,
                         subject: ''
@@ -176,7 +178,12 @@ exports.roomList = async (req, res) => {
                         time: '12.30 - 14.30',
                         punch_in: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 12, 30, 00, 00),
                         punch_out: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 14, 30, 00, 00),
-                        status: status,
+                        status: {
+                            status: false,
+                            status_message: 'Available',
+                            start_at: '',
+                            dismiss_at: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 14, 30, 00, 00).toLocaleString()
+                        },
                         enrolled: [],
                         lecturer: lecturer,
                         subject: ''
@@ -185,7 +192,12 @@ exports.roomList = async (req, res) => {
                         time: '15.00 - 17.00',
                         punch_in: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 15, 0, 00, 00),
                         punch_out: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 17, 30, 00, 00),
-                        status: status,
+                        status: {
+                            status: false,
+                            status_message: 'Available',
+                            start_at: '',
+                            dismiss_at: new Date(splitDate[0], splitDate[1] - 1, splitDate[2], 17, 30, 00, 00).toLocaleString()
+                        },
                         enrolled: [],
                         lecturer: lecturer,
                         subject: ''

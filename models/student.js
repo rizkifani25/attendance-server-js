@@ -7,6 +7,7 @@ const studentSchema = mongoose.Schema({
     password: String,
     batch: String,
     major: String,
+    base_image: String,
     history_room: Array,
 });
 
