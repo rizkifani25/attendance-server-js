@@ -30,20 +30,28 @@ const getUrlFREngine = () => {
     });
 };
 
+const filterStudent = (query, array) => {
+    let student = [];
+    for (let i = 0; i < array.length; i++) {
+        if (array[i].student_id.includes(query)) {
+            student.push(array[i]);
+        }
+    }
+    return student;
+};
+
 // studentList
 exports.studentList = async (req, res) => {
     const { student_id } = req.query;
-    let query = {};
-    let regex = '/' + student_id + '/.test(this.student_id)';
-    student_id ? query = { $where: regex } : query = {};
 
     await studentModel
-        .find(query, { __v: 0, _id: 0 }, (err, doc) => {
+        .find({}, { __v: 0, _id: 0 }, (err, doc) => {
             if (err) console.log(err);
+            let finalResult = filterStudent(student_id, doc);
             res.status(200).send({
                 responseCode: 200,
                 responseMessage: 'Success',
-                data: doc
+                data: student_id ? finalResult : doc
             });
         });
 };

@@ -3,27 +3,27 @@ const lecturerModel = require('../../models/lecturer');
 const { logger } = require('../../service/logger');
 const bcrypt = require('bcryptjs');
 
+const filterLecturer = (query, array) => {
+    let lecturer = [];
+    for (let i = 0; i < array.length; i++) {
+        if (array[i].lecturer_email.includes(query) || array[i].lecturer_name.includes(query)) {
+            lecturer.push(array[i]);
+        }
+    }
+    return lecturer;
+};
+
 // lecturerList
 exports.lecturerList = async (req, res) => {
     const { lecturer_name, lecturer_email } = req.query;
-    let query = {};
-    let regex = '/' + lecturer_name + '/i.test(this.lecturer_name)';
-
-    lecturer_name ?
-        lecturer_name == '' ? query = {} : query = { $where: regex }
-        :
-        lecturer_email ?
-            lecturer_email == '' ? query = {} : query = { lecturer_email: lecturer_email }
-            :
-            query = {};
-
     await lecturerModel
-        .find(query, { __v: 0, _id: 0 }, (err, doc) => {
+        .find({}, { __v: 0, _id: 0 }, (err, doc) => {
             if (err) console.log(err);
+            let finalResult = lecturer_name ? filterLecturer(lecturer_name, doc) : lecturer_email ? filterLecturer(lecturer_email, doc) : [];
             res.status(200).send({
                 responseCode: 200,
                 responseMessage: 'Success',
-                data: doc
+                data: lecturer_name || lecturer_email ? finalResult : doc
             });
         });
 };
